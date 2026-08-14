@@ -1,0 +1,25 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- checkout: self
+
+- task: TerraformInstaller@1
+  displayName: Install Terraform
+  inputs:
+    terraformVersion: '1.9.8'
+
+- script: |
+    terraform init -input=false
+    terraform validate
+  displayName: Terraform Init and Validate
+
+- script: |
+    terraform plan -input=false
+  displayName: Terraform Plan
