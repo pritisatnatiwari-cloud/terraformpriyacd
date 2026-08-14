@@ -1,0 +1,58 @@
+trigger:
+branches:
+include:
+           - master
+
+       pr:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  terraformVersion: 'latest'
+
+stages:
+
+- stage: Validate
+  displayName: Terraform Validate
+  jobs:
+  - job: TerraformValidate
+    displayName: Terraform Init and Validate
+    steps:
+
+    - checkout: self
+
+    - task: TerraformInstaller@1
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: $(terraformVersion)
+
+    - script: |
+        terraform init -input=false
+        terraform validate
+      displayName: Terraform Init and Validate
+
+
+- stage: Plan
+  displayName: Terraform Plan
+  dependsOn: Validate
+  condition: succeeded()
+  jobs:
+  - job: TerraformPlan
+    displayName: Terraform Plan
+    steps:
+
+    - checkout: self
+
+    - task: TerraformInstaller@1
+      displayName: Install Terraform
+      inputs:
+        terraformVersion: $(terraformVersion)
+
+    - script: |
+        terraform init -input=false
+        terraform plan -out=tfplan
+      displayName: Terraform Plan
